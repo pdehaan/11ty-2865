@@ -11,7 +11,7 @@ permalink: "/categories/{{ category | slugify }}/"
 ---
 <h1>{{ title }}</h1>
 
-{% set postslist = collections.categories[category] %}
+{%- set postslist = collections.categories[category] -%}
 {% include "postslist.njk" %}
 
 <p>See <a href="/categories/">all tags</a>.</p>

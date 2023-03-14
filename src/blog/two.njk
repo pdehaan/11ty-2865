@@ -1,10 +1,9 @@
 ---
 title: Blog Post Two
-categories:
-  - Hardware
-  - Software
+category: Hardware
 ---
 
 <h1>{{ title }}</h1>
+
 tags={{ tags | dump | safe }}
-categories={{ categories | dump | safe }}
+category={{ category | dump | safe }}

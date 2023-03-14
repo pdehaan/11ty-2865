@@ -3,41 +3,31 @@
  * @returns {ReturnType<import("@11ty/eleventy/src/defaultConfig")>}
  */
 module.exports = function (eleventyConfig) {
+  // Create a custom collection of unique categories and related posts.
   eleventyConfig.addCollection("categories", function (collection) {
     const _getAllCategories = eleventyConfig.getFilter("getAllCategories");
-    // Get all pages from our `posts` collection.
-    const posts = collection.getFilteredByTag("posts");
+    const posts = collection.getFilteredByGlob("src/blog/*.njk");
     // Get all unique categories from our `posts[]` array.
     const categories = _getAllCategories(posts);
-    const categoryMap = new Map();
-    for (const category of categories) {
+    const categoryMap = categories.reduce((map, category) => {
       // Get all pages from our `posts` collection wwith the specified `category`.
-      const categoryPosts = posts.filter(post => post.data.categories?.includes(category));
-      categoryMap.set(category, categoryPosts);
-    }
-    // Convert the Map to an object of `{category: categoryPosts[]}` like format.
+      const categoryPosts = posts.filter(post => post.data.category === category);
+      return map.set(category, categoryPosts);
+    }, new Map());
+    // Convert category Map to Object.
     return Object.fromEntries(categoryMap);
   });
 
-  eleventyConfig.addFilter("getAllCategories", (collection) => {
-    let categorySet = new Set();
-    for (let item of collection) {
-      (item.data.categories || []).forEach((category) =>
-        categorySet.add(category)
-      );
-    }
-    const _filterCategoryList = eleventyConfig.getFilter("filterCategoryList");
-    return _filterCategoryList(Array.from(categorySet));
+  eleventyConfig.addFilter("getAllCategories", function (collection) {
+    const categorySet = collection.reduce((set, { data }) => {
+      if (data.category && !set.has(data.category)) {
+        console.log(`Adding ${data.category}`);
+        set.add(data.category);
+      }
+      return set;
+    }, new Set());
+    return Array.from(categorySet).sort();
   });
-
-  eleventyConfig.addFilter(
-    "filterCategoryList",
-    function filterCategoryList(categories) {
-      return (categories || []).filter(
-        (category) => !["all", "nav", "post", "posts"].includes(category)
-      );
-    }
-  );
 
   return {
     dir: {
